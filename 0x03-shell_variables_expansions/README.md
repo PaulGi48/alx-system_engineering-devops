@@ -1,2 +1,2 @@
-#!/bin/bash
-script contains shell variables expansions
+
+Create a script that creates an alias.
