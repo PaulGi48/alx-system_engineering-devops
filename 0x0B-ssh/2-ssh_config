@@ -1,0 +1,5 @@
+#!/usr/bin/env bash
+# Client configuration file
+Host school
+    HostName 100.25.194.59
+    User ubuntu

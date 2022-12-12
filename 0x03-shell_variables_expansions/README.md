@@ -1,1 +1,2 @@
-My shel variables expansion README
+#!/bin/bash
+script contains shell variables expansions

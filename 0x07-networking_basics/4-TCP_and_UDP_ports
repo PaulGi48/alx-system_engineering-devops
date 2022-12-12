@@ -1,0 +1,6 @@
+#!/usr/bin/env bash
+# Bash scripr that display listening ports
+#That only show listening sorkets
+#That show the PID and name of the program to which each socke belong
+
+sudo netstat -pl

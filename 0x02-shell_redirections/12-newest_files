@@ -1,2 +1,2 @@
 #!/bin/bash
-ls -t | head
+sudo sort ls -lt | head
