@@ -1,0 +1,2 @@
+#!/bin/bash
+export $DECIMAL | hex=$(([##16]decimal))

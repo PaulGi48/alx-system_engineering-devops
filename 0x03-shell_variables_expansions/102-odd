@@ -1,0 +1,2 @@
+#!/bin/bash
+ls -la | fing -n 1~2p
