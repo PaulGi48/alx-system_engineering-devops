@@ -34,3 +34,6 @@ sudo service haproxy restart
 # Confirm HAProxy is running and enabled
 sudo systemctl status haproxy
 sudo systemctl enable haproxy
+
+
+
