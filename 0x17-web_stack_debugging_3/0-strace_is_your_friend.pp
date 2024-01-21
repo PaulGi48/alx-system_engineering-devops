@@ -1,6 +1,5 @@
-# fixes a file
-exec {'replaces wrong php filetype':
-  command => 'sed -i "s/.php/.php/g" /var/www/html/wp-settings.php',
-  path    => '/bin/:/sbin/:/usr/bin/:/usr/sbin/',
-  onlyif  => 'test -f /var/www/html/wp-settings.php'
+# Correct TYPO error - debugger.
+exec {'typo_errore':
+    provider => shell,
+    command  => 'sed -i "s/phpp/php/g" /var/www/html/wp-settings.php'
 }
