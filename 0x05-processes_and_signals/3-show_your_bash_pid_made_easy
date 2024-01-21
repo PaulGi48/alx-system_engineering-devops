@@ -1,5 +1,0 @@
-#!/usr/bin/env bash
-# print process id and name
-# whose name contain the word bash
-
-pgrep -l bash
