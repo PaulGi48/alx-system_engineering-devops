@@ -1,65 +1,47 @@
-# Postmortem
+Duration: April 15, 2023, 2:30 PM to April 15, 2023, 4:45 PM (UTC)
 
-Upon the release of ALX's System Engineering & DevOps project 0x19,
-approximately 06:00 West African Time (WAT) here in Nigeria, an outage occurred on an isolated
-Ubuntu 14.04 container running an Apache web server. GET requests on the server led to
-`500 Internal Server Error`'s, when the expected response was an HTML file defining a
-simple Holberton WordPress site.
+Impact: Hello there, I’m sharing my experience of a recent service disruption that affected our booking service. As the sole member of the team, I encountered challenges during the outage, which resulted in a 30% error rate for users trying to finalize reservations.
 
-## Debugging Process
+Root Cause:
 
-Bug debugger Brennan (BDB... as in my actual initials... made that up on the spot, pretty
-good, huh?) encountered the issue upon opening the project and being, well, instructed to
-address it, roughly 19:20 PST. He promptly proceeded to undergo solving the problem.
+During my investigation, I identified a misconfigured load balancer as the root cause of the service disruption. This misconfiguration led to intermittent timeouts and dropped requests.
 
-1. Checked running processes using `ps aux`. Two `apache2` processes - `root` and `www-data` -
-were properly running.
+Timeline:
 
-2. Looked in the `sites-available` folder of the `/etc/apache2/` directory. Determined that
-the web server was serving content located in `/var/www/html/`.
+2:30 PM: I noticed a sudden surge in error rates and latency within the booking service.
+2:35 PM: Automated alerts reached me, indicating a critical issue.
+2:40 PM: I initiated an investigation, suspecting an unusual traffic spike.
+3:00 PM: Initial findings hinted at a possible load distribution issue with the load balancer.
+3:15 PM: My attempts to rectify the load balancer’s settings were unsuccessful.
+3:45 PM: Given the complexity, I decided to seek assistance from the infrastructure team.
+4:00 PM: After in-depth analysis, I pinpointed the misconfigured load balancer’s settings.
+4:30 PM: I made the call to disable the problematic load balancer to restore functionality.
+4:45 PM: Disabling the misconfigured load balancer successfully brought the booking service back to normal.
+Root Cause and Resolution:
 
-3. In one terminal, ran `strace` on the PID of the `root` Apache process. In another, curled
-the server. Expected great things... only to be disappointed. `strace` gave no useful
-information.
+The misconfigured load balancer, set to round-robin distribution instead of the intended dynamic algorithm, emerged as the underlying issue. To resolve it, I disabled the problematic load balancer and deployed a new one configured with the correct algorithm. Additionally, I temporarily scaled up backend servers to ensure smoother operation during the recovery process.
 
-4. Repeated step 3, except on the PID of the `www-data` process. Kept expectations lower this
-time... but was rewarded! `strace` revelead an `-1 ENOENT (No such file or directory)` error
-occurring upon an attempt to access the file `/var/www/html/wp-includes/class-wp-locale.phpp`.
+Corrective and Preventative Measures:
 
-5. Looked through files in the `/var/www/html/` directory one-by-one, using Vim pattern
-matching to try and locate the erroneous `.phpp` file extension. Located it in the
-`wp-settings.php` file. (Line 137, `require_once( ABSPATH . WPINC . '/class-wp-locale.php' );`).
+As a one-man team, I’m implementing the following steps to prevent future disruptions:
 
-6. Removed the trailing `p` from the line.
+Thorough Configuration Checks: I’ll perform regular checks of load balancer settings to prevent misconfigurations.
+Robust Monitoring Setup: I’m enhancing monitoring systems to swiftly identify unusual traffic patterns and potential issues.
+Focused Load Testing: I’ll create automated load testing scenarios to simulate different traffic loads and evaluate load balancer performance.
+Continuous Learning: I’m committed to continuous learning, staying updated on load balancer best practices and effective debugging techniques.
+Tasks to Address the Issue:
 
-7. Tested another `curl` on the server. 200 A-ok!
+Load Balancer Reconfiguration: Swiftly update load balancer settings to use the intended dynamic algorithm.
+Comprehensive Load Testing: Rigorously test load balancer behavior under varying traffic scenarios.
+Regular Configuration Audits: Implement automated checks to catch and correct load balancer misconfigurations.
+Documentation Enhancement: Update documentation to include load balancer configurations and recommended practices.
+Personal Review Session: Reflect on this incident, gather insights, and strategize for more effective troubleshooting in the future.
+Conclusion:
 
-8. Wrote a Puppet manifest to automate fixing of the error.
+In this one-man team journey, I’ve learned the importance of meticulous load balancer configuration checks and proactive monitoring. By addressing the root cause and implementing corrective measures, I’m confident in my ability to prevent similar incidents and ensure the reliability of our services.
 
-## Summation
+Project Links;
 
-In short, a typo. Gotta love'em. In full, the WordPress app was encountering a critical
-error in `wp-settings.php` when tyring to load the file `class-wp-locale.phpp`. The correct
-file name, located in the `wp-content` directory of the application folder, was
-`class-wp-locale.php`.
-
-Patch involved a simple fix on the typo, removing the trailing `p`.
-
-## Prevention
-
-This outage was not a web server error, but an application error. To prevent such outages
-moving forward, please keep the following in mind.
-
-* Test! Test test test. Test the application before deploying. This error would have arisen
-and could have been addressed earlier had the app been tested.
-
-* Status monitoring. Enable some uptime-monitoring service such as
-[UptimeRobot](./https://uptimerobot.com/) to alert instantly upon outage of the website.
-
-Note that in response to this error, I wrote a Puppet manifest
-[0-strace_is_your_friend.pp](https://github.com/bdbaraban/holberton-system_engineering-devops/blob/master/0x17-web_stack_debugging_3/0-strace_is_your_friend.pp)
-to automate fixing of any such identitical errors should they occur in the future. The manifest
-replaces any `phpp` extensions in the file `/var/www/html/wp-settings.php` with `php`.
-
-But of course, it will never occur again, because we're programmers, and we never make
-errors! :wink:
+AirBnB_clone
+AirBnB_clone_v2
+AirBnB_clone_v3
