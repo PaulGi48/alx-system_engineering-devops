@@ -1,63 +1,69 @@
 #!/usr/bin/python3
-""" Module for storing the count_words function. """
-from requests import get
+"""
+Script queries Reddit API, parses the title of all hot articles,
+and prints a sorted count of given keywords.
+"""
+import re
+import requests
 
 
-def count_words(subreddit, word_list, word_count=[], page_after=None):
-    """
-    Prints the count of the given words present in the title of the
-    subreddit's hottest articles.
-    """
-    headers = {'User-Agent': 'HolbertonSchool'}
+def add_title(dictionary, hot_posts):
+    """Adds post into list"""
+    if len(hot_posts) == 0:
+        return
 
-    word_list = [word.lower() for word in word_list]
+    title = hot_posts[0]['data']['title'].split()
+    for word in title:
+        for key in dictionary.keys():
+            c = re.compile("^{}$".format(key), re.I)
+            if c.findall(word):
+                dictionary[key] += 1
+    hot_posts.pop(0)
+    add_title(dictionary, hot_posts)
 
-    if bool(word_count) is False:
-        for word in word_list:
-            word_count.append(0)
 
-    if page_after is None:
-        url = 'https://www.reddit.com/r/{}/hot.json'.format(subreddit)
-        r = get(url, headers=headers, allow_redirects=False)
-        if r.status_code == 200:
-            for child in r.json()['data']['children']:
-                i = 0
-                for i in range(len(word_list)):
-                    for word in [w for w in child['data']['title'].split()]:
-                        word = word.lower()
-                        if word_list[i] == word:
-                            word_count[i] += 1
-                    i += 1
+def recurse(subreddit, dictionary, after=None):
+    """Recursively queries Reddit API"""
+    u_agent = 'Mozilla/5.0'
+    headers = {
+        'User-Agent': u_agent
+    }
 
-            if r.json()['data']['after'] is not None:
-                count_words(subreddit, word_list,
-                            word_count, r.json()['data']['after'])
-    else:
-        url = ('https://www.reddit.com/r/{}/hot.json?after={}'
-               .format(subreddit,
-                       page_after))
-        r = get(url, headers=headers, allow_redirects=False)
+    params = {
+        'after': after
+    }
 
-        if r.status_code == 200:
-            for child in r.json()['data']['children']:
-                i = 0
-                for i in range(len(word_list)):
-                    for word in [w for w in child['data']['title'].split()]:
-                        word = word.lower()
-                        if word_list[i] == word:
-                            word_count[i] += 1
-                    i += 1
-            if r.json()['data']['after'] is not None:
-                count_words(subreddit, word_list,
-                            word_count, r.json()['data']['after'])
-            else:
-                dicto = {}
-                for key_word in list(set(word_list)):
-                    i = word_list.index(key_word)
-                    if word_count[i] != 0:
-                        dicto[word_list[i]] = (word_count[i] *
-                                               word_list.count(word_list[i]))
+    url = "https://www.reddit.com/r/{}/hot.json".format(subreddit)
+    res = requests.get(url,
+                       headers=headers,
+                       params=params,
+                       allow_redirects=False)
 
-                for key, value in sorted(dicto.items(),
-                                         key=lambda x: (-x[1], x[0])):
-                    print('{}: {}'.format(key, value))
+    if res.status_code != 200:
+        return None
+
+    dic = res.json()
+    hot_posts = dic['data']['children']
+    add_title(dictionary, hot_posts)
+    after = dic['data']['after']
+    if not after:
+        return
+    recurse(subreddit, dictionary, after=after)
+
+
+def count_words(subreddit, word_list, dictionary=None):
+    """Initializes objects"""
+    if dictionary is None:
+        dictionary = {}
+
+    for word in word_list:
+        word = word.lower()
+        if word not in dictionary:
+            dictionary[word] = 0
+
+    recurse(subreddit, dictionary)
+
+    sorted_items = sorted(dictionary.items(), key=lambda kv: (-kv[1], kv[0]))
+    for item in sorted_items:
+        if item[1] > 0:
+            print("{}: {}".format(item[0], item[1]))
