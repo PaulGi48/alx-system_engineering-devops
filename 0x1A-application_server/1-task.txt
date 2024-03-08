@@ -1,0 +1,39 @@
+https://www.digitalocean.com/community/tutorials/how-to-serve-flask-applications-with-gunicorn-and-nginx-on-ubuntu-16-04
+
+No install enviroment
+Only install gunicorn
+
+Create the WSGI Entry Point
+
+2-task
+
+Modify path  /etc/nginx/sites-available/default add new location.
+
+
+Verificar 
+sudo nginx -t --> Revisa los archivos de configuracion.
+journalctl -xe --> log de error
+
+date "+%H:%M:%S   %d/%m/%y"
+
+4-task
+
+#!!!!!!!!!!!!!!!!!!!! agregar variables en sudo vim /etc/environment !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+Instalar todos lo paquetes del proyecto si no muestra informacion verfica package MySQLdb mediante la console.py
+> sudo apt-get install -y python3-mysqldb
+
+5-task 
+add static 
+location /static {
+                alias /home/ubuntu/AirBnB_clone_v4/web_dynamic/static/;
+}
+
+6-Task 
+## Create a systemd Unit File
+sudo nano /etc/systemd/system/myproject.service
+
+Despues ejecutar 
+
+sudo systemctl daemon-reload
+sudo systemctl restart gunicorn.service
+sudo systemctl status gunicorn.service
