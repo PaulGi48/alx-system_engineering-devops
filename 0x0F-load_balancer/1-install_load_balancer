@@ -1,39 +1,38 @@
 #!/usr/bin/env bash
-
-# Variables (Replace [STUDENT_ID] with actual student ID)
-STUDENT_ID="[STUDENT_ID]"
-WEB_01_HOSTNAME="${STUDENT_ID}-web-01"
-WEB_02_HOSTNAME="${STUDENT_ID}-web-02"
-
-# Update packages
+# Installs, configures, and starts the load balancer
+# Update package lists
 sudo apt-get update
-sudo apt-get -y upgrade
 
 # Install HAProxy
-sudo apt-get -y install haproxy
-
-# Backup original HAProxy configuration
-sudo cp /etc/haproxy/haproxy.cfg /etc/haproxy/haproxy.cfg.orig
+sudo apt-get install haproxy -y
 
 # Configure HAProxy
-cat <<EOF | sudo tee -a /etc/haproxy/haproxy.cfg
+sudo tee /etc/haproxy/haproxy.cfg > /dev/null <<EOT
+global
+    daemon
+    maxconn 256
+
+defaults
+    mode http
+    timeout connect 5000ms
+    timeout client 50000ms
+    timeout server 50000ms
+
 frontend http_front
-   bind *:80
-   stats uri /haproxy?stats
-   default_backend http_back
+    bind *:80
+    default_backend http_back
 
 backend http_back
-   balance roundrobin
-   server ${WEB_01_HOSTNAME} ${WEB_01_HOSTNAME}:80 check
-   server ${WEB_02_HOSTNAME} ${WEB_02_HOSTNAME}:80 check
-EOF
+    balance roundrobin
+    server web-01 100.26.225.174:80 check
+    server web-02 18.209.224.170:80 check
+EOT
 
-# Restart HAProxy to apply changes
-sudo service haproxy restart
+# Test HAProxy configuration
+sudo haproxy -c -f /etc/haproxy/haproxy.cfg
 
-# Confirm HAProxy is running and enabled
-sudo systemctl status haproxy
+# Start HAProxy
+sudo systemctl start haproxy
+
+# Enable HAProxy to start on boot
 sudo systemctl enable haproxy
-
-
-

@@ -1,5 +1,4 @@
 #!/usr/bin/env bash
-# bash script that uses ssh to connect to server
-#using private key ~/.ssh/school with a user ubuntu
-chmod 600 ~/.ssh/holberton
-ssh -i ~/.ssh/school ubuntu@100.25.194.59
+#A script that connects to serve through a private key
+
+ssh -i ~/.ssh/school ubuntu@<100.26.225.174
